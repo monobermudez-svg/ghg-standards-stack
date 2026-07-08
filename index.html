@@ -1,0 +1,496 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O&G GHG Measurement Standards — Stack</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#0E1417; --bg2:#0B1013; --surf:#161D21; --surf2:#1B2429; --line:#2A353B;
+    --hi:#ECE9E0; --mid:#A8B0AC; --lo:#727B78;
+    --amber:#E8A33D; --teal:#5BB8A5; --clay:#C8654B; --orange:#D98244;
+    --l1:#6B8FAD; --l2:#7E9B8E; --l3:#E8A33D; --l4:#C8654B; --lc:#5BA3C4;
+    --disp:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--hi);font-family:var(--body);line-height:1.55;
+    -webkit-font-smoothing:antialiased;font-feature-settings:"cv05","ss01";}
+  a{color:var(--teal);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 80px}
+
+  /* Masthead */
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin:0 0 10px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(28px,5vw,46px);line-height:1.02;letter-spacing:-.02em;margin:0 0 14px}
+  .thesis{font-size:clamp(15px,2.2vw,18px);color:var(--mid);max-width:62ch;margin:0 0 22px}
+  .thesis b{color:var(--hi);font-weight:600}
+
+  .controlbar{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin:8px 0 6px}
+  .asof{font-family:var(--mono);font-size:12px;color:var(--lo)}
+  .asof b{color:var(--mid);font-weight:500}
+  .btn{font-family:var(--mono);font-size:12px;letter-spacing:.04em;cursor:pointer;
+    background:transparent;color:var(--hi);border:1px solid var(--line);border-radius:2px;padding:8px 13px;
+    display:inline-flex;align-items:center;gap:8px;transition:border-color .15s,background .15s}
+  .btn:hover{border-color:var(--teal)}
+  .btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  .btn[disabled]{opacity:.45;cursor:default}
+  .btn.primary{border-color:var(--amber)}
+  .btn.primary:hover{background:rgba(232,163,61,.08)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 0 rgba(91,184,165,.5)}
+  .btn.busy .dot{animation:pulse 1.1s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(91,184,165,.45)}70%{box-shadow:0 0 0 7px rgba(91,184,165,0)}100%{box-shadow:0 0 0 0 rgba(91,184,165,0)}}
+
+  .note{font-size:13px;color:var(--lo);max-width:78ch;margin:14px 0 4px}
+  .note b{color:var(--mid);font-weight:500}
+
+  /* section labels + summary */
+  .sectionlabel{display:flex;align-items:center;gap:14px;margin:34px 0 14px;font-family:var(--mono);
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+  .sectionlabel::after{content:"";flex:1;height:1px;background:var(--line)}
+  .sectionlabel .sub{color:var(--lo);letter-spacing:.04em;text-transform:none;font-size:11px}
+  .summary{border:1px solid var(--line);border-radius:6px;background:var(--bg2);padding:14px;overflow:hidden}
+  .summary svg{width:100%;height:auto;display:block;border-radius:3px}
+
+  /* Legend */
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:16px 0 30px;font-family:var(--mono);font-size:11px;color:var(--mid)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .chip{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;
+    text-transform:uppercase;padding:2px 7px;border-radius:2px;border:1px solid transparent;white-space:nowrap}
+  .m-established{color:var(--teal);border-color:rgba(91,184,165,.4);background:rgba(91,184,165,.08)}
+  .m-quasi{color:var(--amber);border-color:rgba(232,163,61,.4);background:rgba(232,163,61,.08)}
+  .m-emerging{color:var(--orange);border-color:rgba(217,130,68,.4);background:rgba(217,130,68,.08)}
+  .m-proposed{color:var(--lo);border-color:var(--line);background:transparent}
+
+  /* Stack / strata */
+  .layer{position:relative;padding-left:88px;margin-bottom:14px}
+  .rail{position:absolute;left:0;top:0;bottom:0;width:72px}
+  .rail .band{position:absolute;inset:0;border-radius:3px;opacity:.16}
+  .rail .lnum{position:absolute;top:16px;left:0;right:0;text-align:center;font-family:var(--disp);
+    font-weight:700;font-size:26px;color:var(--hi)}
+  .rail .depth{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:var(--mono);
+    font-size:9.5px;letter-spacing:.1em;color:var(--mid);text-transform:uppercase}
+  .rail .tick{position:absolute;left:50%;transform:translateX(-50%);width:1px;background:var(--line)}
+
+  .lhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:2px 0 12px}
+  .lhead h2{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:-.01em;margin:0}
+  .lhead .tag{font-family:var(--mono);font-size:11px;color:var(--lo);letter-spacing:.04em}
+
+  .cards{display:grid;gap:10px}
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:4px;border-left:2px solid var(--bandc);
+    padding:14px 16px;transition:border-color .15s,background .15s}
+  .card:hover{background:var(--surf2)}
+  .ctop{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline;justify-content:space-between}
+  .cname{font-family:var(--disp);font-weight:600;font-size:15.5px;letter-spacing:-.005em}
+  .cver{font-family:var(--mono);font-size:11px;color:var(--lo);font-weight:400}
+  .cmeasures{color:var(--mid);font-size:13.5px;margin:7px 0 0;max-width:74ch}
+  .cmeta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:11px}
+  .adopt{font-family:var(--mono);font-size:11px;color:var(--lo);letter-spacing:.03em}
+  .adopt b{color:var(--mid);font-weight:500}
+  .verified{font-family:var(--mono);font-size:10.5px;color:var(--teal);display:none;align-items:center;gap:6px}
+  .verified.show{display:inline-flex}
+  .verified .vd{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+  .spacer{flex:1}
+  .reverify{font-family:var(--mono);font-size:11px;color:var(--mid);background:transparent;border:1px solid var(--line);
+    border-radius:2px;padding:5px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:border-color .15s,color .15s}
+  .reverify:hover{border-color:var(--teal);color:var(--hi)}
+  .reverify:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  .reverify .rd{width:6px;height:6px;border-radius:50%;background:var(--mid)}
+  .reverify.busy .rd{background:var(--teal);animation:pulse 1.1s infinite}
+  .reverify.err{border-color:var(--clay);color:var(--clay)}
+  .live{margin-top:11px;border-top:1px dashed var(--line);padding-top:10px;display:none}
+  .live.show{display:block}
+  .live .ll{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:5px}
+  .live .lt{font-size:13px;color:var(--hi)}
+  .live .lc{font-family:var(--mono);font-size:10.5px;color:var(--lo);margin-top:6px}
+  .src{font-family:var(--mono);font-size:11.5px}
+  .src::before{content:"↗ ";color:var(--lo)}
+
+  /* Watchlist */
+  .watch{margin-top:46px;border:1px solid var(--line);border-radius:4px;background:var(--bg2);padding:22px 24px}
+  .watch h2{font-family:var(--disp);font-weight:600;font-size:18px;margin:0 0 4px}
+  .watch .sub{color:var(--lo);font-size:13px;margin:0 0 16px}
+  .witem{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-items:baseline}
+  .witem:last-child{padding-bottom:0}
+  .wname{font-family:var(--disp);font-weight:500;font-size:14.5px}
+  .wdesc{color:var(--mid);font-size:13px;grid-column:1/-1;max-width:80ch}
+  .wstat{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--amber);text-transform:uppercase;white-space:nowrap}
+  .wstat.unv{color:var(--lo)}
+
+  footer{margin-top:44px;border-top:1px solid var(--line);padding-top:18px;color:var(--lo);font-size:12px;max-width:80ch}
+  footer b{color:var(--mid);font-weight:500}
+
+  @media (max-width:620px){
+    .layer{padding-left:0}
+    .rail{position:relative;width:100%;height:38px;margin-bottom:10px}
+    .rail .band{border-radius:3px}
+    .rail .lnum{top:6px;left:12px;right:auto;font-size:20px}
+    .rail .depth{bottom:11px;left:auto;right:14px;top:auto}
+    .rail .tick{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Reference · Oil &amp; Gas · Product-Level GHG Measurement</p>
+  <h1>The standards stack for carbon &amp; methane intensity</h1>
+  <p class="thesis">There is no single product-level GHG standard for oil &amp; gas — there is a <b>stack</b>. Horizontal LCA grammar at the base, an O&amp;G estimation substrate above it, the fast-moving product-attribute layer where the commercial action sits, and the regulatory forcing functions turning voluntary methods into market-access requirements.</p>
+
+  <div class="controlbar">
+    <span class="asof">Compiled as of <b id="baseline">2026-06-24</b></span>
+    <span class="spacer"></span>
+    <span class="asof">Source links on each card are the ground truth</span>
+  </div>
+  <p class="note">Maturity ratings reflect how consolidated each method is, not its technical quality. Every card links to its <b>authoritative source</b> — verify there before quoting a date or version to a client.</p>
+
+  <div class="sectionlabel">At a glance <span class="sub">— the whole stack on one view</span></div>
+  <div class="summary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1112" font-family="'Helvetica Neue',Arial,sans-serif">
+<rect x="0" y="0" width="1280" height="1112" fill="#0E1417"/>
+<rect x="30" y="24" width="44" height="118" rx="3" fill="#C8654B" opacity="0.16"/>
+<text x="52.0" y="58" font-family="'Helvetica Neue',Arial,sans-serif" font-size="24" font-weight="700" fill="#ECE9E0" text-anchor="middle">4</text>
+<rect x="90" y="24" width="1132" height="118" rx="5" fill="#161D21" stroke="#2A353B" stroke-width="1"/>
+<rect x="90" y="24" width="3" height="118" rx="0" fill="#C8654B"/>
+<text x="112" y="54" font-family="'Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="600" fill="#ECE9E0" text-anchor="start">Layer 4 — Regulatory forcing functions</text>
+<text x="529.2" y="54" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11.5" font-weight="400" fill="#727B78" text-anchor="start">what makes binding</text>
+<rect x="112.0" y="68" width="261.5" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="68" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="128.0" cy="86" r="3.5" fill="#E8A33D"/>
+<text x="140.0" y="90" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">EU Methane Reg</text>
+<text x="126.0" y="108" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">(EU) 2024/1787 · 2028</text>
+<rect x="387.5" y="68" width="261.5" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="387.5" y="68" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="403.5" cy="86" r="3.5" fill="#E8A33D"/>
+<text x="415.5" y="90" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">CBAM</text>
+<text x="401.5" y="108" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">(EU) 2023/956 · 2026</text>
+<rect x="663.0" y="68" width="261.5" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="663.0" y="68" width="3" height="52" rx="0" fill="#8A938F"/>
+<circle cx="679.0" cy="86" r="3.5" fill="#8A938F"/>
+<text x="691.0" y="90" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">OGDC</text>
+<text x="677.0" y="108" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">COP28 · commitment</text>
+<rect x="938.5" y="68" width="261.5" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="938.5" y="68" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="954.5" cy="86" r="3.5" fill="#5BB8A5"/>
+<text x="966.5" y="90" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">CARB LCFS</text>
+<text x="952.5" y="108" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">California · influential</text>
+<rect x="30" y="150" width="44" height="548" rx="3" fill="#E8A33D" opacity="0.16"/>
+<text x="52.0" y="184" font-family="'Helvetica Neue',Arial,sans-serif" font-size="24" font-weight="700" fill="#ECE9E0" text-anchor="middle">3</text>
+<rect x="90" y="150" width="1132" height="548" rx="5" fill="#161D21" stroke="#2A353B" stroke-width="1"/>
+<rect x="90" y="150" width="3" height="548" rx="0" fill="#E8A33D"/>
+<text x="112" y="180" font-family="'Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="600" fill="#ECE9E0" text-anchor="start">Layer 3 — Product-attribute layer</text>
+<text x="114.0" y="208" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11" font-weight="500" fill="#A8B0AC" text-anchor="start" letter-spacing="0.03em">CRUDE CARBON INTENSITY</text>
+<line x1="112.0" y1="216" x2="464.0" y2="216" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="228" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="228" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="128.0" cy="246" r="3.5" fill="#E8A33D"/>
+<text x="140.0" y="250" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">OPGEE</text>
+<text x="126.0" y="268" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">well→refinery · v3.x</text>
+<rect x="112.0" y="288" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="288" width="3" height="52" rx="0" fill="#D98244"/>
+<circle cx="128.0" cy="306" r="3.5" fill="#D98244"/>
+<text x="140.0" y="310" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">GHGfrack</text>
+<text x="126.0" y="328" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">drilling combustion</text>
+<text x="482.0" y="208" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11" font-weight="500" fill="#A8B0AC" text-anchor="start" letter-spacing="0.03em">METHANE / DIFFERENTIATED GAS</text>
+<line x1="480.0" y1="216" x2="832.0" y2="216" stroke="#2A353B" stroke-width="1"/>
+<rect x="480.0" y="228" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="480.0" y="228" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="496.0" cy="246" r="3.5" fill="#E8A33D"/>
+<text x="508.0" y="250" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">OGMP 2.0</text>
+<text x="494.0" y="268" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">UNEP IMEO · L4/L5</text>
+<rect x="480.0" y="288" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="480.0" y="288" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="496.0" cy="306" r="3.5" fill="#E8A33D"/>
+<text x="508.0" y="310" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">MiQ</text>
+<text x="494.0" y="328" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">cert · A–F grade</text>
+<rect x="480.0" y="348" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="480.0" y="348" width="3" height="52" rx="0" fill="#D98244"/>
+<circle cx="496.0" cy="366" r="3.5" fill="#D98244"/>
+<text x="508.0" y="370" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">GTI Veritas</text>
+<text x="494.0" y="388" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">protocols</text>
+<rect x="480.0" y="408" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="480.0" y="408" width="3" height="52" rx="0" fill="#D98244"/>
+<circle cx="496.0" cy="426" r="3.5" fill="#D98244"/>
+<text x="508.0" y="430" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">Project Canary</text>
+<text x="494.0" y="448" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">monitoring</text>
+<text x="850.0" y="208" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11" font-weight="500" fill="#A8B0AC" text-anchor="start" letter-spacing="0.03em">LNG CARGO FOOTPRINT</text>
+<line x1="848.0" y1="216" x2="1200.0" y2="216" stroke="#2A353B" stroke-width="1"/>
+<rect x="848.0" y="228" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="848.0" y="228" width="3" height="52" rx="0" fill="#D98244"/>
+<circle cx="864.0" cy="246" r="3.5" fill="#D98244"/>
+<text x="876.0" y="250" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">GIIGNL MRV</text>
+<text x="862.0" y="268" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">cargo statement · 2021</text>
+<rect x="848.0" y="288" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="848.0" y="288" width="3" height="52" rx="0" fill="#D98244"/>
+<circle cx="864.0" cy="306" r="3.5" fill="#D98244"/>
+<text x="876.0" y="310" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">SGE Methodology</text>
+<text x="862.0" y="328" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">ISO 14067-anchored</text>
+<rect x="848.0" y="348" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="848.0" y="348" width="3" height="52" rx="0" fill="#8A938F"/>
+<circle cx="864.0" cy="366" r="3.5" fill="#8A938F"/>
+<text x="876.0" y="370" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO LNG standard</text>
+<text x="862.0" y="388" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">not confirmed · watch</text>
+<text x="114.0" y="488" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11" font-weight="500" fill="#A8B0AC" text-anchor="start" letter-spacing="0.03em">HYDROGEN — GREY / BLUE / GREEN</text>
+<line x1="112.0" y1="496" x2="464.0" y2="496" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="508" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="508" width="3" height="52" rx="0" fill="#D98244"/>
+<circle cx="128.0" cy="526" r="3.5" fill="#D98244"/>
+<text x="140.0" y="530" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 19870-1:2026</text>
+<text x="126.0" y="548" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">prod. gate · ISO 14067</text>
+<rect x="112.0" y="568" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="568" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="128.0" cy="586" r="3.5" fill="#E8A33D"/>
+<text x="140.0" y="590" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">CertifHy</text>
+<text x="126.0" y="608" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">EU RFNBO + low-C scheme</text>
+<rect x="112.0" y="628" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="628" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="128.0" cy="646" r="3.5" fill="#E8A33D"/>
+<text x="140.0" y="650" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">EU Low-C H₂ DA</text>
+<text x="126.0" y="668" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">(EU) 2025/2359</text>
+<text x="482.0" y="488" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11" font-weight="500" fill="#A8B0AC" text-anchor="start" letter-spacing="0.03em">AMMONIA</text>
+<line x1="480.0" y1="496" x2="832.0" y2="496" stroke="#2A353B" stroke-width="1"/>
+<rect x="480.0" y="508" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="480.0" y="508" width="3" height="52" rx="0" fill="#8A938F"/>
+<circle cx="496.0" cy="526" r="3.5" fill="#8A938F"/>
+<text x="508.0" y="530" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 19870-3</text>
+<text x="494.0" y="548" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">H₂ carrier · DIS 2026</text>
+<rect x="480.0" y="568" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="480.0" y="568" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="496.0" cy="586" r="3.5" fill="#5BB8A5"/>
+<text x="508.0" y="590" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">TfS (fertiliser route)</text>
+<text x="494.0" y="608" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">chemical-route PCF</text>
+<text x="850.0" y="488" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11" font-weight="500" fill="#A8B0AC" text-anchor="start" letter-spacing="0.03em">PETROCHEMICALS</text>
+<line x1="848.0" y1="496" x2="1200.0" y2="496" stroke="#2A353B" stroke-width="1"/>
+<rect x="848.0" y="508" width="352.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="848.0" y="508" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="864.0" cy="526" r="3.5" fill="#5BB8A5"/>
+<text x="876.0" y="530" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">TfS PCF</text>
+<text x="862.0" y="548" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">chemicals · ISO 14067</text>
+<line x1="480.0" y1="470" x2="1200.0" y2="470" stroke="#E8A33D" stroke-width="1.5"/>
+<line x1="480.0" y1="470" x2="480.0" y2="463" stroke="#E8A33D" stroke-width="1.5"/>
+<line x1="1200.0" y1="470" x2="1200.0" y2="463" stroke="#E8A33D" stroke-width="1.5"/>
+<rect x="30" y="706" width="44" height="118" rx="3" fill="#5BA3C4" opacity="0.16"/>
+<text x="52.0" y="732" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="12" font-weight="700" fill="#5BA3C4" text-anchor="middle">CO₂</text>
+<text x="52.0" y="750" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="9" font-weight="400" fill="#A8B0AC" text-anchor="middle">strand</text>
+<rect x="90" y="706" width="1132" height="118" rx="5" fill="#161D21" stroke="#2A353B" stroke-width="1"/>
+<rect x="90" y="706" width="3" height="118" rx="0" fill="#5BA3C4"/>
+<text x="112" y="736" font-family="'Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="600" fill="#ECE9E0" text-anchor="start">Process strand — CCUS / CO₂ capture &amp; geological storage</text>
+<text x="716.4" y="736" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11.5" font-weight="400" fill="#727B78" text-anchor="start">project-level quantification · driven by US 45Q</text>
+<rect x="112.0" y="750" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="750" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="128.0" cy="768" r="3.5" fill="#5BB8A5"/>
+<text x="140.0" y="772" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 14064-2</text>
+<text x="126.0" y="790" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">project-level GHG</text>
+<rect x="332.0" y="750" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="332.0" y="750" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="348.0" cy="768" r="3.5" fill="#E8A33D"/>
+<text x="360.0" y="772" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 27914:2026</text>
+<text x="346.0" y="790" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">geological storage</text>
+<rect x="552.0" y="750" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="552.0" y="750" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="568.0" cy="768" r="3.5" fill="#5BB8A5"/>
+<text x="580.0" y="772" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 27916</text>
+<text x="566.0" y="790" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">CO₂-EOR storage</text>
+<rect x="772.0" y="750" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="772.0" y="750" width="3" height="52" rx="0" fill="#8A938F"/>
+<circle cx="788.0" cy="768" r="3.5" fill="#8A938F"/>
+<text x="800.0" y="772" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 27920</text>
+<text x="786.0" y="790" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">quantif. &amp; verif. · DIS</text>
+<rect x="992.0" y="750" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="992.0" y="750" width="3" height="52" rx="0" fill="#E8A33D"/>
+<circle cx="1008.0" cy="768" r="3.5" fill="#E8A33D"/>
+<text x="1020.0" y="772" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">US 45Q</text>
+<text x="1006.0" y="790" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">Subpart RR / VV</text>
+<rect x="30" y="832" width="44" height="110" rx="3" fill="#7E9B8E" opacity="0.16"/>
+<text x="52.0" y="866" font-family="'Helvetica Neue',Arial,sans-serif" font-size="24" font-weight="700" fill="#ECE9E0" text-anchor="middle">2</text>
+<rect x="90" y="832" width="1132" height="110" rx="5" fill="#161D21" stroke="#2A353B" stroke-width="1"/>
+<rect x="90" y="832" width="3" height="110" rx="0" fill="#7E9B8E"/>
+<text x="112" y="862" font-family="'Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="600" fill="#ECE9E0" text-anchor="start">Layer 2 — O&amp;G entity-method substrate</text>
+<text x="518.8" y="862" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11.5" font-weight="400" fill="#727B78" text-anchor="start">the activity-data engine</text>
+<rect x="112.0" y="874" width="537.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="874" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="128.0" cy="892" r="3.5" fill="#5BB8A5"/>
+<text x="140.0" y="896" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">API GHG Compendium</text>
+<text x="126.0" y="914" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">4th ed. 2021 · incl. LNG/CCUS</text>
+<rect x="663.0" y="874" width="537.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="663.0" y="874" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="679.0" cy="892" r="3.5" fill="#5BB8A5"/>
+<text x="691.0" y="896" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">IPIECA / API / IOGP</text>
+<text x="677.0" y="914" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">industry reporting guidance</text>
+<rect x="30" y="950" width="44" height="118" rx="3" fill="#6B8FAD" opacity="0.16"/>
+<text x="52.0" y="984" font-family="'Helvetica Neue',Arial,sans-serif" font-size="24" font-weight="700" fill="#ECE9E0" text-anchor="middle">1</text>
+<rect x="90" y="950" width="1132" height="118" rx="5" fill="#161D21" stroke="#2A353B" stroke-width="1"/>
+<rect x="90" y="950" width="3" height="118" rx="0" fill="#6B8FAD"/>
+<text x="112" y="980" font-family="'Helvetica Neue',Arial,sans-serif" font-size="17" font-weight="600" fill="#ECE9E0" text-anchor="start">Layer 1 — Horizontal product-LCA standards</text>
+<text x="570.8" y="980" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="11.5" font-weight="400" fill="#727B78" text-anchor="start">the grammar</text>
+<rect x="112.0" y="994" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="112.0" y="994" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="128.0" cy="1012" r="3.5" fill="#5BB8A5"/>
+<text x="140.0" y="1016" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 14067</text>
+<text x="126.0" y="1034" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">PCF · 2018</text>
+<rect x="332.0" y="994" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="332.0" y="994" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="348.0" cy="1012" r="3.5" fill="#5BB8A5"/>
+<text x="360.0" y="1016" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 14040/44</text>
+<text x="346.0" y="1034" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">LCA principles</text>
+<rect x="552.0" y="994" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="552.0" y="994" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="568.0" cy="1012" r="3.5" fill="#5BB8A5"/>
+<text x="580.0" y="1016" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">GHGP Product</text>
+<text x="566.0" y="1034" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">WRI/WBCSD</text>
+<rect x="772.0" y="994" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="772.0" y="994" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="788.0" cy="1012" r="3.5" fill="#5BB8A5"/>
+<text x="800.0" y="1016" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 14064-3</text>
+<text x="786.0" y="1034" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">verification</text>
+<rect x="992.0" y="994" width="208.0" height="52" rx="3" fill="#1B2429" stroke="#2A353B" stroke-width="1"/>
+<rect x="992.0" y="994" width="3" height="52" rx="0" fill="#5BB8A5"/>
+<circle cx="1008.0" cy="1012" r="3.5" fill="#5BB8A5"/>
+<text x="1020.0" y="1016" font-family="'Helvetica Neue',Arial,sans-serif" font-size="14.5" font-weight="600" fill="#ECE9E0" text-anchor="start">ISO 14083</text>
+<text x="1006.0" y="1034" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="10.5" font-weight="400" fill="#727B78" text-anchor="start" letter-spacing="0.02em">transport chain</text>
+<path d="M 1240 24 L 1240 698" stroke="#C8654B" stroke-width="1.6" opacity="0.55"/>
+<path d="M 1236 690 L 1240 698 L 1244 690 Z" fill="#C8654B" opacity="0.8"/>
+<text x="1262" y="24" font-family="'SFMono-Regular','IBM Plex Mono',Consolas,monospace" font-size="13" font-weight="600" fill="#C8654B" text-anchor="start" letter-spacing="0.12em" transform="rotate(90 1262 24)">REGULATION FORCES ADOPTION</text>
+<text x="90" y="1098" font-family="'Helvetica Neue',Arial,sans-serif" font-size="11.5" font-weight="500" fill="#E8A33D" text-anchor="start">⌐ Layers 3b/3c (methane · LNG cargo) remain unconsolidated where the EU makes measurement mandatory (Art. 29, 2028).</text>
+</svg></div>
+
+  <div class="sectionlabel">The detail <span class="sub">— source-linked, per standard</span></div>
+
+  <div class="legend">
+    <span><span class="chip m-established">Established</span> stable, widely adopted</span>
+    <span><span class="chip m-quasi">Quasi-regulatory</span> hardening into a requirement</span>
+    <span><span class="chip m-emerging">Emerging</span> contested / not consolidated</span>
+    <span><span class="chip m-proposed">Proposed</span> defined, not yet operative</span>
+  </div>
+
+  <div id="stack"></div>
+
+  <div class="watch">
+    <h2>Watchlist — moving pieces</h2>
+    <p class="sub">Not yet consolidated standards, ordered by how much they could reshape the stack. The first two are the ones to track hardest.</p>
+    <div id="watchlist"></div>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const BASELINE = "2026-06-24";
+
+const LAYERS = [
+  {n:1, c:"--l1", title:"Horizontal product-LCA standards", tag:"the grammar", depth:"foundation"},
+  {n:2, c:"--l2", title:"O&G entity-method substrate", tag:"the activity-data engine", depth:"substrate"},
+  {key:"ccus", badge:"CO₂", c:"--lc", title:"Process strand — CCUS / CO₂ capture & geological storage", tag:"project-level quantification · driven by US 45Q", depth:"process strand"},
+  {n:3, c:"--l3", title:"Product-attribute layer", tag:"where the commercial action is", depth:"reservoir"},
+  {n:4, c:"--l4", title:"Regulatory forcing functions", tag:"what makes the stack binding", depth:"surface · active"},
+];
+
+const STD = [
+  // Layer 1
+  {id:"iso14067",layer:1,name:"ISO 14067:2018",ver:"PCF",measures:"Product carbon footprint quantification — the parent the O&G product methods cite (the SGE anchors to it).",maturity:"established",adoption:"High",src:{label:"iso.org/standard/71206",url:"https://www.iso.org/standard/71206.html"}},
+  {id:"iso14040",layer:1,name:"ISO 14040 / 14044",ver:"LCA",measures:"LCA principles & requirements — system boundaries, functional unit, allocation. The co-product allocation dispute is framed here, not settled.",maturity:"established",adoption:"High",src:{label:"iso.org/standard/37456",url:"https://www.iso.org/standard/37456.html"}},
+  {id:"ghgp-product",layer:1,name:"GHG Protocol Product Standard",ver:"WRI/WBCSD",measures:"Product life-cycle accounting & reporting — functionally parallel to ISO 14067.",maturity:"established",adoption:"High",src:{label:"ghgprotocol.org/product-standard",url:"https://ghgprotocol.org/product-standard"}},
+  {id:"iso14064-3",layer:1,name:"ISO 14064-3:2019",ver:"Verification",measures:"Verification & validation of GHG assertions — the assurance step used by the SGE and most certification schemes.",maturity:"established",adoption:"High",src:{label:"iso.org/standard/66455",url:"https://www.iso.org/standard/66455.html"}},
+  {id:"iso14083",layer:1,name:"ISO 14083:2023",ver:"Transport",measures:"GHG quantification for transport chains — relevant to the LNG shipping leg specifically.",maturity:"established",adoption:"Growing",src:{label:"iso.org/standard/78864",url:"https://www.iso.org/standard/78864.html"}},
+  // Layer 2
+  {id:"api-compendium",layer:2,name:"API GHG Compendium",ver:"4th ed. · 2021",measures:"Foundational O&G emissions-estimation methodologies; 4th ed. added LNG and CCUS. What most NOCs/IOCs actually run — being displaced in rigour by direct measurement.",maturity:"established",adoption:"High",src:{label:"api.org · ghg-reporting",url:"https://www.api.org/news-policy-and-issues/sustainability/ghg-reporting"}},
+  {id:"ipieca",layer:2,name:"IPIECA / API / IOGP Guidelines",ver:"Guidance",measures:"Petroleum-industry GHG & sustainability reporting guidance, built on the GHG Protocol. Explicitly guidance, not a standard — its limitation as the market moves to verified attributes.",maturity:"established",adoption:"High",src:{label:"ipieca.org/resources",url:"https://www.ipieca.org/resources"}},
+  // Layer 3a crude
+  {id:"opgee",layer:3,name:"OPGEE",ver:"v3.x · crude CI",measures:"Open-source, engineering bottom-up crude carbon intensity, well-to-refinery-gate (~65 parameters/field). The de-facto upstream reference; underpins CARB LCFS and S&P crude-CI assessments.",maturity:"quasi",adoption:"High",src:{label:"eao.stanford.edu · OPGEE",url:"https://eao.stanford.edu/research-project/opgee-oil-production-greenhouse-gas-emissions-estimator"}},
+  {id:"ghgfrack",layer:3,name:"GHGfrack",ver:"crude · drilling",measures:"Companion open-source model for drilling & hydraulic-fracturing combustion emissions. Niche but relevant for tight-oil CI.",maturity:"emerging",adoption:"Niche",src:{label:"eao.stanford.edu",url:"https://eao.stanford.edu/"}},
+  // Layer 3b LNG
+  {id:"giignl",layer:3,name:"GIIGNL MRV & GHG-Neutral Framework",ver:"LNG cargo · 2021",measures:"Importer-side framework to quantify and declare a cargo's full-lifecycle footprint via an independently verified Cargo Statement. Integrates established methods rather than replacing them.",maturity:"emerging",adoption:"Growing",src:{label:"giignl.org",url:"https://giignl.org/"}},
+  {id:"sge",layer:3,name:"SGE Methodology",ver:"LNG cargo · 2021",measures:"Statement of GHG Emissions — delivered-cargo product LCA (Pavilion / QatarEnergy / Chevron), anchored to ISO 14067 with ISO 14064-3 verification. Coexists with / partly competes against GIIGNL.",maturity:"emerging",adoption:"Growing",src:{label:"chevron.com · SGE methodology",url:"https://www.chevron.com/-/media/chevron/sustainability/documents/SGE-methodology.pdf"}},
+  {id:"iso-lng",layer:3,name:"ISO LNG-footprint standard",ver:"LNG · watch",measures:"A formal ISO LNG GHG-footprint standard is not confirmed published. The space is governed by the industry frameworks above pending any formalisation — treat as a watch item.",maturity:"proposed",adoption:"Pending",src:{label:"iso.org · TC search",url:"https://www.iso.org/committee/54574.html"}},
+  // Layer 3c methane
+  {id:"ogmp",layer:3,name:"OGMP 2.0",ver:"UNEP IMEO",measures:"Methane reporting framework, five levels; L4 source-level measurement, L5 site reconciliation. Covers ~42% of global O&G production. Named in EU regulation as a compliance pathway — now quasi-regulatory.",maturity:"quasi",adoption:"High",src:{label:"ogmpartnership.com",url:"https://ogmpartnership.com/"}},
+  {id:"miq",layer:3,name:"MiQ",ver:"methane cert · A–F",measures:"Independent methane-intensity certificate, A–F grading, LCA concept to point of entry, designed to align with OGMP 2.0 L4/L5. Built for global NOC/IOC certification including EU imports.",maturity:"quasi",adoption:"Growing",src:{label:"miq.org",url:"https://miq.org/"}},
+  {id:"veritas",layer:3,name:"GTI Energy Veritas",ver:"protocols",measures:"Measurement protocols for building measurement-informed inventories — a methodology layer rather than a certificate.",maturity:"emerging",adoption:"Growing",src:{label:"veritas.gti.energy",url:"https://veritas.gti.energy/"}},
+  {id:"canary",layer:3,name:"Project Canary (TrustWell)",ver:"monitoring",measures:"Continuous monitoring + asset assessment feeding tradable attributes. Commercial, US-centric — under integrity scrutiny over producer-entangled certification models.",maturity:"emerging",adoption:"Commercial",src:{label:"projectcanary.com",url:"https://www.projectcanary.com/"}},
+  // Layer 3d petrochem
+  {id:"tfs",layer:3,name:"TfS PCF Guideline",ver:"chemicals",measures:"Chemical-sector specialisation of product carbon footprinting; built on ISO 14067 + GHG Protocol Product Standard, interoperable with WBCSD PACT. The relevant standard once an O&G molecule becomes a petrochemical feedstock.",maturity:"established",adoption:"High",src:{label:"tfs-initiative.com",url:"https://www.tfs-initiative.com/"}},
+  // Layer 3e hydrogen
+  {id:"iso19870",layer:3,name:"ISO 19870 series",ver:"H₂ · prod. gate",measures:"Horizontal hydrogen GHG methodology, anchored to ISO 14067. TS 19870:2023 upgraded to ISO 19870-1:2026 (emissions to the production gate); covers grey / blue / green pathways well-to-gate. Adoption building.",maturity:"emerging",adoption:"Building",src:{label:"iso.org/standard/65628",url:"https://www.iso.org/standard/65628.html"}},
+  {id:"certifhy",layer:3,name:"CertifHy",ver:"H₂ certification",measures:"Leading EU hydrogen certification — the RFNBO (renewable) scheme under RED II/III plus a new Low-Carbon Voluntary Scheme. Increasingly a prerequisite for selling H₂ and derivatives into the EU.",maturity:"quasi",adoption:"Growing",src:{label:"certifhy.eu",url:"https://www.certifhy.eu/"}},
+  {id:"eu-lowc-h2",layer:3,name:"EU Low-Carbon H₂ Delegated Act",ver:"(EU) 2025/2359",measures:"Defines low-carbon hydrogen as ≥70% GHG reduction vs a 94 gCO₂e/MJ fossil comparator; in force Nov 2025, applies to EU and non-EU producers exporting to the EU. The methodology basis CertifHy operationalises.",maturity:"quasi",adoption:"Binding",src:{label:"eur-lex · 2025/2359",url:"https://eur-lex.europa.eu/"}},
+  // Layer 3f ammonia
+  {id:"iso19870-3",layer:3,name:"ISO 19870-3",ver:"ammonia · DIS 2026",measures:"Ammonia segment of the hydrogen supply chain — production, storage, transport of ammonia as an H₂ carrier and its reconversion to hydrogen. Draft International Standard (2026); part of the ISO 19870 series.",maturity:"proposed",adoption:"Pending",src:{label:"iso.org · 19870-3",url:"https://www.iso.org/standard/19870-3"}},
+  {id:"tfs-ammonia",layer:3,name:"TfS (fertiliser-route ammonia)",ver:"ammonia · cross-ref",measures:"Conventional / fertiliser-route ammonia is covered as a chemical product under the TfS PCF Guideline. The H₂-carrier route is addressed by ISO 19870-3 — so ammonia sits across two methodologies depending on use.",maturity:"established",adoption:"High",src:{label:"tfs-initiative.com",url:"https://www.tfs-initiative.com/"}},
+  // CCUS — process strand
+  {id:"iso14064-2",layer:"ccus",name:"ISO 14064-2",ver:"project-level GHG",measures:"Project-level GHG quantification, monitoring and reporting — the accounting backbone underneath the CCS-specific storage standards.",maturity:"established",adoption:"High",src:{label:"iso.org/standard/66454",url:"https://www.iso.org/standard/66454.html"}},
+  {id:"iso27914",layer:"ccus",name:"ISO 27914:2026",ver:"geological storage",measures:"Quantifies the net mass of CO₂ stored in geological formations that do not produce hydrocarbons. Finalised 2026; under review as a potential US 45Q / Subpart RR reporting substitute.",maturity:"quasi",adoption:"Growing",src:{label:"iso.org/standard/84578",url:"https://www.iso.org/standard/84578.html"}},
+  {id:"iso27916",layer:"ccus",name:"ISO 27916",ver:"CO₂-EOR storage",measures:"Quantifies CO₂ stored in association with enhanced oil recovery. Already referenced by US EPA Subpart VV for 45Q reporting on CO₂-EOR operations.",maturity:"established",adoption:"In US regs",src:{label:"iso.org/standard/65937",url:"https://www.iso.org/standard/65937.html"}},
+  {id:"iso27920",layer:"ccus",name:"ISO 27920",ver:"quantif. & verif. · DIS",measures:"CCS quantification and verification across the project chain (capture, transport, geological storage), technology-neutral and risk-based. Draft International Standard — the consolidating cross-cutting CCS quantification standard.",maturity:"proposed",adoption:"Pending",src:{label:"iso.org · 27920",url:"https://www.iso.org/obp/ui/#iso:std:iso:27920:dis"}},
+  {id:"us-45q",layer:"ccus",name:"US 45Q (Subpart RR / VV)",ver:"regulatory driver",measures:"The tax-credit and GHG-reporting regime that drives CCUS measurement in the US — a different forcing engine from the EU import rules. Subpart RR for saline storage; Subpart VV for CO₂-EOR via ISO 27916.",maturity:"quasi",adoption:"Binding (US)",src:{label:"epa.gov · GHGRP",url:"https://www.epa.gov/ghgreporting"}},
+  // Layer 4
+  {id:"eu-methane",layer:4,name:"EU Methane Regulation",ver:"(EU) 2024/1787",measures:"The decisive instrument. Import equivalence for contracts signed/renewed after 4 Aug 2024 (OGMP L5 + verification, or EU-equivalent MRV); Article 29 methane-intensity methodology binding on imports from Aug 2028; Methane Transparency Database due Sept 2026.",maturity:"quasi",adoption:"Binding",src:{label:"energy.ec.europa.eu · methane",url:"https://energy.ec.europa.eu/topics/carbon-management-and-fossil-fuels/methane-emissions_en"}},
+  {id:"cbam",layer:4,name:"CBAM",ver:"(EU) 2023/956",measures:"Border carbon cost; definitive period from Jan 2026. Bites O&G-derivatives via steel, aluminium, fertilisers and hydrogen — gas/LNG itself unlikely near-term. Pulls embedded-emissions data through product PCF.",maturity:"quasi",adoption:"Binding",src:{label:"taxation-customs.ec.europa.eu · CBAM",url:"https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en"}},
+  {id:"ogdc",layer:4,name:"OGDC",ver:"COP28",measures:"Oil & Gas Decarbonization Charter — near-zero methane by 2030 aspiration. A commitment layer, not a measurement method.",maturity:"proposed",adoption:"Signatory",src:{label:"cop28 · OGDC",url:"https://www.ogdc.org/"}},
+  {id:"carb-lcfs",layer:4,name:"CARB LCFS",ver:"California",measures:"Low-Carbon Fuel Standard — the original regulatory home of OPGEE. Subnational but methodologically influential on crude-CI scoring.",maturity:"established",adoption:"Regional",src:{label:"arb.ca.gov · LCFS",url:"https://ww2.arb.ca.gov/our-work/programs/low-carbon-fuel-standard"}},
+];
+
+const WATCH = [
+  {name:"EU Methane Regulation — Article 29 methodology",stat:"Defined · not operative",desc:"The binding arbiter of what \u201Cmethane intensity\u201D legally means for EU-bound molecules from 2028 (co-product allocation, GWP rules). The single most important emerging standard — final operational rules still being worked.",unv:false},
+  {name:"SGE \u2194 GIIGNL consolidation",stat:"Unresolved race",desc:"Two LNG-cargo footprint frameworks coexist with overlap. Which prevails — or whether ISO formalises a successor — is unsettled. Betting on the winner is speculative.",unv:false},
+  {name:"Methane-certification convergence criteria",stat:"Proposed · 2025",desc:"CATF / EDF / RMI proposed governance criteria (conflict-of-interest separation, registry, anti-double-counting) likely to shape which schemes the EU recognises. Proposed, not adopted.",unv:false},
+  {name:"GHG Protocol — Land Sector & Removals + revised suite",stat:"Phasing 2027",desc:"Affects O&G Scope 3 and CCS/removals accounting. LSR effective Jan 2027; revised Corporate / Scope 3 ~2027.",unv:false},
+  {name:"Hydrogen carbon-intensity certification",stat:"Unverified this pass",desc:"CertifHy and EU delegated acts on low-carbon / RFNBO hydrogen — directly relevant as majors pivot to blue/green H\u2082. Fragmented and emerging; not re-verified in the baseline pass.",unv:true},
+  {name:"Open Footprint Forum",stat:"Unverified this pass",desc:"Emerging data-model / interoperability standard for emissions-data exchange in energy. Relevant to the digital plumbing, not the measurement method.",unv:true},
+];
+
+const MLABEL = {established:"Established",quasi:"Quasi-regulatory",emerging:"Emerging",proposed:"Proposed"};
+const SKEY = id => "ogghg:v1:"+id;
+
+function el(t,c,h){const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+
+function render(){
+  const stack=document.getElementById('stack');
+  stack.innerHTML='';
+  LAYERS.forEach(L=>{
+    const key = L.key || L.n;
+    const lay=el('div','layer');
+    const rail=el('div','rail');
+    const band=el('div','band');band.style.background=`var(${L.c})`;
+    const lnum=el('div','lnum',L.badge||String(L.n));
+    if(L.badge){lnum.style.fontSize='16px';lnum.style.fontWeight='700';lnum.style.fontFamily="var(--mono)";lnum.style.color=`var(${L.c})`;}
+    const depth=el('div','depth',L.depth);
+    rail.append(band,lnum,depth);
+    const head=el('div','lhead');
+    head.append(el('h2',null, L.badge ? L.title : `Layer ${L.n} — ${L.title}`));
+    head.append(el('span','tag',L.tag));
+    const cards=el('div','cards');
+    STD.filter(s=>s.layer===key).forEach(s=>cards.append(card(s,L)));
+    lay.append(rail,head,cards);
+    stack.append(lay);
+  });
+  // watchlist
+  const wl=document.getElementById('watchlist');wl.innerHTML='';
+  WATCH.forEach(w=>{
+    const it=el('div','witem');
+    it.append(el('div','wname',w.name));
+    it.append(el('div','wstat'+(w.unv?' unv':''),w.stat));
+    it.append(el('div','wdesc',w.desc));
+    wl.append(it);
+  });
+  document.getElementById('foot').innerHTML =
+    `<b>How to read this.</b> Maturity reflects consolidation, not quality — a \u201Cquasi-regulatory\u201D method is one regulation is hardening into a requirement, regardless of technical merit. The commercial opening sits in Layer 3b/3c, which is deliberately unconsolidated at exactly the point the EU is about to make mandatory (Art. 29, 2028) — a real but <b>time-boxed</b> window. Baseline compiled ${BASELINE}. Source links are authoritative; re-verify is assistive.`;
+}
+
+function card(s,L){
+  const c=el('div','card');c.style.setProperty('--bandc',`var(${L.c})`);
+  const top=el('div','ctop');
+  const nameWrap=el('div');
+  nameWrap.append(el('span','cname',s.name+' '));
+  nameWrap.append(el('span','cver',s.ver));
+  top.append(nameWrap);
+  top.append(el('span','chip m-'+s.maturity,MLABEL[s.maturity]));
+  c.append(top);
+  c.append(el('p','cmeasures',s.measures));
+  const meta=el('div','cmeta');
+  meta.append(el('span','adopt',`Adoption · <b>${s.adoption}</b>`));
+  const a=el('a','src',s.src.label);a.href=s.src.url;a.target='_blank';a.rel='noopener';
+  meta.append(a);
+  c.append(meta);
+  return c;
+}
+
+render();
+</script>
